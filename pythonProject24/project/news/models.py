@@ -1,7 +1,12 @@
+from django.contrib.auth.models import User
 from django.db import models
 from django.urls import reverse
 
-
+class Category(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    subscribers = models.ManyToManyField(User, blank=True, null=True, related_name='categories')
+    def __str__(self):
+        return self.name.title()
 class News(models.Model):
     article = 'AR'
     news = "NW"
@@ -17,9 +22,8 @@ class News(models.Model):
     )
     description = models.TextField()
     category = models.ForeignKey(
-        to='Category',
-        on_delete=models.CASCADE,
-        related_name='news',
+        Category,
+        on_delete=models.CASCADE
     )
     author = models.ForeignKey(
         to='Author',
@@ -32,11 +36,9 @@ class News(models.Model):
     def get_absolute_url(self):
         return reverse('new_detail', args=[str(self.id)])
 
-class Category(models.Model):
-    name = models.CharField(max_length=100, unique=True)
-
-    def __str__(self):
-        return self.name.title()
+class NewsCategory(models.Model):
+    news = models.ForeignKey(News, on_delete=models.CASCADE)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE)
 
 class Author(models.Model):
     name = models.CharField(max_length=100, unique=True)

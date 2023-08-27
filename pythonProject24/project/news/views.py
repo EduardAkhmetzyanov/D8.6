@@ -1,4 +1,7 @@
-from .models import News
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import get_object_or_404, render
+
+from .models import News, Category
 from datetime import datetime
 from .filters import NewsFilter
 from django.views.generic import (
@@ -70,3 +73,30 @@ class ArticleDelete(DeleteView):
     template_name = 'article_delete.html'
     success_url = reverse_lazy('new_list')
 
+class CategoryListView(ListView):
+    model = News
+    template_name = 'category_list.html'
+    context_object_name = 'category_news_list'
+
+    def get_queryset(self):
+        self.category = get_object_or_404(Category, id = self.kwargs['pk'])
+        queryset = News.objects.filter(category=self.category).order_by('-time_create')
+        return queryset
+
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['is_not_subscriber'] = self.request.user not in self.category.subscribers.all()
+        context['category'] = self.category
+        return context
+
+
+@login_required
+def subscribe(request, pk):
+    user = request.user
+    category = Category.objects.get(id=pk)
+    category.subscribers.add(user)
+
+    message = "Вы успешно подписались на рассылку новостей категории"
+
+    return render(request, 'subscribe.html', {'category': category, 'message': message})

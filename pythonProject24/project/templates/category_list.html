@@ -7,6 +7,9 @@ News
 {% endblock title %}
 
 {% block content %}
+{% if is_not_subscriber %}
+<p class="text-center"><a href="{% url 'subscribe' category.id %}" class="btn btn-secondary btn-sm">Подписаться</a></p>
+{% endif %}
    <h1>Всего новостей: {{ news|length }}</h1>
     <form action="" method="get">
         {{ filterset.form.as_p }}
@@ -14,7 +17,7 @@ News
    </form>
    <h3>{{ time_now|date:'M d Y' }}</h3>
    <hr>
-   {% if news %}
+   {% if category_news_list %}
        <table>
            <tr>
                <td>Название</td>
@@ -24,16 +27,14 @@ News
                <td>Категория</td>
            </tr>
 
-           {% for new in news %}
+           {% for new in category_news_list %}
            <tr>
                <td>{{ new.name }}</td>
                <td>{{ new.author.name }}</td>
                <td>{{ new.description|truncatechars:20|censor }}</td>
                <td>{{ new.time_create }}</td>
                <td>
-
                    <a href="{% url 'category_list' new.category.id %}">{{ new.category.name }}</a>
-
                </td>
            </tr>
            {% endfor %}
